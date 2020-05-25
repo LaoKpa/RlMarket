@@ -164,10 +164,10 @@ string Intraday<T1, T2>::getEpisodeId()
 template<class T1, class T2>
 void Intraday<T1, T2>::_place_orders(int al, int bl,int levels,bool replace)
 {
-    ask_level = al*levels;
-    bid_level = bl*levels;
+    ask_level = al ;
+    bid_level = bl ;
 
-    std::tie(ask_quote, bid_quote) = l2p_(ask_level,bid_level);
+    std::tie(ask_quote, bid_quote) = l2p_(ask_level*levels, bid_level * levels);
 
     risk_manager_.PlaceOrder(market::Side::ask, ask_quote, ORDER_SIZE, replace);
     risk_manager_.PlaceOrder(market::Side::bid, bid_quote, ORDER_SIZE, replace);
@@ -180,86 +180,43 @@ void Intraday<T1, T2>::DoAction(int action)
 
     // Do the action
     switch (action) {
-/*
-        default:
-            _place_orders(1,1,10);
-            break;
-*/
         case 0:
-            _place_orders(1, 1,5);
+            _place_orders(1, 1,10);
             break;
 
         case 1:
             ClearInventory();
-            _place_orders(ask_level, bid_level,5);
+            _place_orders(ask_level, bid_level, 10);
 
             break;
 
         case 2:
-            _place_orders(2, 2,5);
+            _place_orders(2, 2, 10);
             break;
 
         case 3:
-            _place_orders(3, 3,5);
+            _place_orders(3, 3, 10);
             break;
 
         case 4:
-            _place_orders(0, 2,5);
+            _place_orders(0, 2, 10);
             break;
 
         case 5:
-            _place_orders(2, 0,5);
+            _place_orders(2, 0, 10);
             break;
 
         case 6:
-            _place_orders(1, 4,5);
+            _place_orders(1, 4, 10);
             break;
 
         case 7:
-            _place_orders(4, 1,5);
+            _place_orders(4, 1, 10);
             break;
 
         case 8:
-            _place_orders(5, 5,5);
+            _place_orders(5, 5, 10);
             break;
-
-//        case 0:
-//            _place_orders(8, 8);
-//            break;
-//
-//        case 1:
-//            ClearInventory();
-//            _place_orders(ask_level, bid_level);
-//
-//            break;
-//
-//        case 2:
-//            _place_orders(9, 9);
-//            break;
-//
-//        case 3:
-//            _place_orders(10, 10);
-//            break;
-//
-//        case 4:
-//            _place_orders(8, );
-//            break;
-//
-//        case 5:
-//            _place_orders(7, 5);
-//            break;
-//
-//        case 6:
-//            _place_orders(6, 9);
-//            break;
-//
-//        case 7:
-//            _place_orders(9, 6);
-//            break;
-//
-//        case 8:
-//            _place_orders(10, 10);
-//            break;
     }
 }
 
@@ -286,8 +243,11 @@ bool Intraday<T1, T2>::NextState()
     auto adverse_selection =
         market::BookUtils::HandleAdverseSelection(ask_book_, bid_book_);
 
-    pnl_step += get<1>(au) + get<1>(bu) + get<1>(adverse_selection);
+    tradepnl = get<1>(au) + get<1>(bu) + get<1>(adverse_selection);
+
+    pnl_step += tradepnl;
     lo_vol_step += get<0>(bu) - get<0>(au) + abs(get<0>(adverse_selection));
+
 
     episode_stats.pnl += get<2>(au) + get<2>(bu) + get<2>(adverse_selection);
 
@@ -296,29 +256,25 @@ bool Intraday<T1, T2>::NextState()
 
     long mpt = market->ToTicks(midprice(ask_book_, bid_book_));
     double mpm = midprice_move(ask_book_, bid_book_),
-           sp = spread(ask_book_, bid_book_);
+            sp = spread(ask_book_, bid_book_);
+
+    pospnl = mpm * risk_manager_.exposure();
 
     f_midprice.push(mpt);
     f_volatility.push(mpt);
     f_vwap_numer.push(ask_book_.observed_value() + bid_book_.observed_value());
     f_vwap_denom.push(ask_book_.observed_volume() + bid_book_.observed_volume());
 
-    spread_window.push(max(0.0, sp));
+    spread_window.push(fmax(0.0, sp));
     target_price_->update(ask_book_, bid_book_);
 
-    return_ups.push(max(0.0, mpm));
-    return_downs.push(abs(min(0.0, mpm)));
+    return_ups.push(fmax(0.0, mpm));
+    return_downs.push(abs(fmin(0.0, mpm)));
 
     f_ask_transactions.push(ask_book_.observed_volume());
     f_bid_transactions.push(bid_book_.observed_volume());
 
-    //episode,step,position,side,action,price,size,pnl
-    //ask
-    if(get<0>(au))
-        LogTrade('A', last_action,ask_quote, get<0>(au), 0 );
-    //bid
-    if(get<0>(bu))
-        LogTrade('B', last_action,bid_quote, get<0>(bu),  0);
+
     return true;
 }
 
@@ -486,6 +442,53 @@ void Intraday<T1, T2>::printInfo(const int action)
 }
 
 template<class T1, class T2>
+void Intraday<T1, T2>::LogMarket() {
+    if (trade_logger != nullptr)
+    {
+        trade_logger->info("{}", " ");
+        trade_logger->info("{},{},{},{},{},{},{}",
+                           market->date(), market->time(), time2sec(market->time()),
+                           ask_book_.price(0), ask_book_.volume(ask_book_.price(0)), bid_book_.price(0), bid_book_.volume(bid_book_.price(0)));
+        for (int i = 1; i != 5; i++) {
+            trade_logger->info(" , , ,{},{},{},{}",
+                               ask_book_.price(i), ask_book_.volume(ask_book_.price(i)), bid_book_.price(i), bid_book_.volume(bid_book_.price(i)));
+        }
+    }
+}
+
+template<class T1, class T2>
+void Intraday<T1, T2>::LogAction(int action, int ask, double ref, int bid, int pos) {
+    if (trade_logger != nullptr)
+        trade_logger->info("{},{},{},{},{},{},{}",
+                           "","选择报单", action, ask, ref, bid, pos);
+}
+
+template<class T1, class T2>
+void Intraday<T1, T2>::LogOpenOrder() {
+    auto od_iter = ask_book_.open_orders.begin();
+    for (; od_iter != ask_book_.open_orders.end(); od_iter++) {
+        if (trade_logger != nullptr)
+            trade_logger->info("{},{},{},{},{},{}",
+                               "","挂单", od_iter->second->id, 'A', od_iter->second->price, od_iter->second->remaining());
+    }
+    od_iter = bid_book_.open_orders.begin();
+    for (; od_iter != bid_book_.open_orders.end(); od_iter++) {
+        if (trade_logger != nullptr)
+            trade_logger->info("{},{},{},{},{},{}",
+                               "","挂单", od_iter->second->id, 'B', od_iter->second->price, od_iter->second->remaining());
+    }
+}
+
+template<class T1, class T2>
+void Intraday<T1, T2>::LogTrade(int index, char side, int price, int vol) {
+    if (trade_logger != nullptr) {
+        trade_logger->info("{},{},{},{},{},{},{}",
+                           "", "", "", index, (int)side, price, vol);
+        trade_logger->info("{}"," ");
+    }
+}
+
+template<class T1, class T2>
 void Intraday<T1, T2>::LogProfit(int action, double pnl, double bandh)
 {
     if (profit_logger != nullptr)
@@ -502,16 +505,17 @@ void Intraday<T1, T2>::LogProfit(int action, double pnl, double bandh)
 }
 
 template<class T1, class T2>
-void Intraday<T1, T2>::LogTrade(char side, int type, double price,
-                                long size, double pnl)
-{
-    if (trade_logger != nullptr)
-        trade_logger->info("{},{},{},{},{},{},{},{},{}",
-                           market->date(), market->time(),time2sec(market->time()),
-                           risk_manager_.exposure(),
-                           side, type, price, size, pnl);
+void Intraday<T1, T2>::LogPnl(double tradepnl,double pospnl,double totalpnl,
+                              double aggpnl,double rew) {
+    if (trade_logger != nullptr) {
+        trade_logger->info(",TradePnl,{},PosPnl,{},TotalPnl,{}",
+                           tradepnl, pospnl, totalpnl);
+        trade_logger->info(",AggPnl,{},Reward,{}",
+                           aggpnl, rew);
+    }
 }
+
 
 // Template specialisations
 template class environment::Intraday<data::basic::MarketDepth,
-                                     data::basic::TimeAndSales>;
+        data::basic::TimeAndSales>;

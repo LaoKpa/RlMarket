@@ -5,10 +5,12 @@
 #include <iomanip>
 #include <sstream>
 
-static long time2sec(int time){
-    time = time/100;
-    return ((int)(time/3600)*10000+((time%3600)/60)*100+(time%60));
+static long time2sec(int time) {
+    //hour*3600+min*60+sec
+    time = time / 1000;
+    return ((int)(time / 3600) * 10000 + (int)((time % 3600) / 60) * 100 + (time % 60));
 }
+
 static long add_hours(long update, long time)
 {
     return time + update*3600000;

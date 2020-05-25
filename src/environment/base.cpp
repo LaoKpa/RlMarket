@@ -269,10 +269,18 @@ bool Base::performAction(int action)
     // Essentially performAction() leaves the environment in a ready state for
     // the next action.
 
+    //记录t0时刻的行情
+    LogMarket();
     // Do agent's action -> risk manager
     DoAction(action);
 
+
+    //记录t0时刻agent做出的挂单选择
+    LogAction(action, ask_quote, target_price_->get(), bid_quote, risk_manager_.exposure());
+
     risk_manager_.CheckOrders();
+
+    LogOpenOrder();
 
     // Update occupancy statistics: ticks_with...
     UpdateStats();
@@ -300,25 +308,27 @@ bool Base::performAction(int action)
 
         observed_volume += ask_book_.observed_volume() +
                            bid_book_.observed_volume();
+        //记录当前区间的pnl、reward
+        LogPnl(tradepnl, pospnl, tradepnl + pospnl, agg_pnl, getReward());
 
-    // } while (false);
-    } while (not isTerminal() and abs(agg_mpm) < 1e-5);
+    } while (false);
+    //} while (not isTerminal() and abs(agg_mpm) < 1e-5);
 
     /* BLOCK 3 - Apply inventory constraints */
     // if (risk_manager_.at_bound()) {
-        // pnl_step = 0.0;
+    // pnl_step = 0.0;
 
-        // ClearInventory();
+    // ClearInventory();
 
-        // agg_pnl += pnl_step;
-        // agg_r += getReward();
+    // agg_pnl += pnl_step;
+    // agg_r += getReward();
     // }
 
     /* BLOCK 4 - Update statistics */
     pnl_step = agg_pnl;
 
-    pnl_ups.push(max(0.0, pnl_step));
-    pnl_downs.push(abs(min(0.0, pnl_step)));
+    pnl_ups.push(fmax(0.0, pnl_step));
+    pnl_downs.push(abs(fmin(0.0, pnl_step)));
 
     // Logging {
     episode_stats.reward += agg_r;
@@ -332,7 +342,6 @@ bool Base::performAction(int action)
 
     LogProfit(action, pnl_step, agg_mpm);
     // }
-
     return true;
 }
 
@@ -398,6 +407,9 @@ void Base::start_logging()
 {
     profit_logger = spdlog::get("profit_log");
     trade_logger = spdlog::get("trade_log");
+
+    ask_book_.SetLogger(trade_logger);
+    bid_book_.SetLogger(trade_logger);
 
     if (profit_logger == nullptr or trade_logger == nullptr)
         throw runtime_error("Loggers not registered!");

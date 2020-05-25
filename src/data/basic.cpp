@@ -58,10 +58,10 @@ bool MarketDepth::_ParseRow()
         }
 
         record_next.ask_prices[i] = nap;
-        record_next.ask_volumes[i] = (stol(row_.at(AV1 + i)))*100;
+        record_next.ask_volumes[i] = (stol(row_.at(AV1 + i)));
 
         record_next.bid_prices[i] = nbp;
-        record_next.bid_volumes[i] = (stol(row_.at(BV1 + i)))*100;
+        record_next.bid_volumes[i] = (stol(row_.at(BV1 + i)));
     }
 
     row_.clear();

@@ -55,8 +55,15 @@ class Intraday: public Base
         void _place_orders(int sp, int sk, int level=1,bool replace=true);
 
         void LogProfit(int action, double pnl, double bandh);
-        void LogTrade(char side, int type, double price,
-                      long size, double pnl);
+        void LogMarket();
+        //用于记录t0时刻的行情
+        void LogTrade(int index, char side, int price, int vol);
+        //用于记录t0时刻的open_order在t1时刻的撮合成交情况
+        void LogAction(int action, int ask, double ref, int bid, int pos);
+        //用于记录t0时刻做出的报单选择
+        void LogOpenOrder();
+        void LogPnl(double, double, double, double, double);
+        //用于记录当前区间内的各种pnl
 
     public:
         Intraday(Config& c);

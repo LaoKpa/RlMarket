@@ -19,13 +19,14 @@ struct Order
 
     public:
         const long id;
+        const char side;
 
         const double price;
         const long size;
 
         const long initial_queue;
 
-        Order(double price, long size, long q_head);
+        Order(double price, long size, long q_head,char side);
 
         long remaining();
         long getLastExecutedVolume();

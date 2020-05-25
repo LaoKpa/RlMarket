@@ -7,19 +7,15 @@
 #include <thread>
 #include <fstream>
 #include <iostream>
-#include <unistd.h>
-#include <dirent.h>
+
 #include <iterator>
 #include <algorithm>
-#include <yaml-cpp/yaml.h>
 #include <spdlog/spdlog.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "rl/agent.h"
 #include "rl/tiles.h"
-#include "data/basic.h"
-#include "experiment/batch.h"
 #include "experiment/serial.h"
 #include "utilities/files.h"
 #include "utilities/sampler.h"
@@ -220,9 +216,10 @@ void run(Config &c) {
     for (int i = 0; i < n_eval_episodes; i++) {
         data_sample_t ds = test_set[i];
         env.LoadData(get<0>(ds), get<1>(ds), get<2>(ds));
-
-        experiment::serial::Backtester experiment(c, env);
-
+        string date_file = get<2>(ds);
+        int npos = date_file.find_last_of("_");
+        date_file = date_file.substr(npos,20);
+        experiment::serial::Backtester experiment(c, env, date_file);
         current_episode++;
 
         if (experiment.RunEpisode(m)) {

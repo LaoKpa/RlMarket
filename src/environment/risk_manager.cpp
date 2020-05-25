@@ -65,14 +65,14 @@ bool RiskManager::PlaceOrder(market::Side side, double price, long size,
         case market::Side::ask: {
             int oc = ask_book_.order_count();
             if (oc < ORDER_LIMIT)
-                return ask_book_.PlaceOrder(price, size);
+                return ask_book_.PlaceOrder(price, size,'A');
 
             else if (oc > ORDER_LIMIT)
                 throw runtime_error("Order count has exceeded ORDER_LIMIT!");
 
             else if (auto_cancel) {
                 ask_book_.CancelWorst();
-                ask_book_.PlaceOrder(price, size);
+                ask_book_.PlaceOrder(price, size,'A');
             }
 
             break;
@@ -81,14 +81,14 @@ bool RiskManager::PlaceOrder(market::Side side, double price, long size,
         case market::Side::bid: {
             int oc = bid_book_.order_count();
             if (oc < ORDER_LIMIT)
-                return bid_book_.PlaceOrder(price, size);
+                return bid_book_.PlaceOrder(price, size,'B');
 
             else if (oc > ORDER_LIMIT)
                 throw runtime_error("Order count has exceeded ORDER_LIMIT!");
 
             else if (auto_cancel) {
                 bid_book_.CancelWorst();
-                bid_book_.PlaceOrder(price, size);
+                bid_book_.PlaceOrder(price, size,'B');
             }
 
             break;

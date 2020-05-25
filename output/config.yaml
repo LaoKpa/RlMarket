@@ -1,0 +1,95 @@
+debug:
+    inspect_books: false
+    # random_seed: 1994
+
+training:
+    n_threads: 1
+    n_samples: 1
+    n_episodes: 1
+
+evaluation:
+    n_samples: 1
+    use_train_sample: true
+
+    random_agent: false
+
+learning:
+    memory_size: 20000000
+    n_tilings: 32
+    n_actions: 9
+
+    algorithm: sarsa
+
+    group_weights: [0.65, 0.25, 0.10]
+
+    gamma: 0.975
+    lambda: 0.85
+
+    omega: 1.0
+    alpha_start: 0.001
+    alpha_floor: 0.001
+
+    beta: 0.005
+
+policy:
+    type: epsilon_greedy
+
+    eps_init: 0.8
+    eps_floor: 0.0001
+    eps_T: 800
+
+    spread_lookback: 45
+
+reward:
+    measure: pnl_damped
+
+    damping_factor: 0.15
+
+    pnl_lookback: 0
+
+    pos_weight: 0.0
+    pnl_weight: 1.0
+
+state:
+    variables: ["pos", "a_dist", "b_dist", "mpm", "spd", "vol", "imb", "svl"]
+    lookback:
+        mpm: 15
+        vlt: 60
+        svl: 60
+        rsi: 100
+        vwap: 100
+
+data:
+    symbols: ["000661.SZ"]
+
+    md_dir: "../data/md"
+    tas_dir: "../data/tas"
+    #md_dir: "../../../temp/md"
+    #tas_dir: "../../../temp/tas"
+market:
+    transaction_fee: 0.0
+
+    target_price:
+        type: midprice          #源代码有笔误
+
+        lookback: 1
+
+    latency:
+        type: fixed
+
+        floor: 0.0
+
+        mu: 0.0
+        sigma: 0.0
+
+    pos_ub: 600
+    pos_lb: -600
+
+    order_size: 100
+
+logging:
+    log_learning: true
+    log_backtest: true
+
+    max_size: 50000000000
+
