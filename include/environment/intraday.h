@@ -20,7 +20,9 @@ enum class Variable {
     rsi, vwap,
     a_dist, a_queue,
     b_dist, b_queue,
-    last_action
+    last_action,abv_diff,abv_diff_change,
+    abv_diff_ratio,av_consume,bv_consume,
+    av_consume_5d,bv_consume_5d
 };
 
 template<class T1 = data::basic::MarketDepth,
@@ -43,8 +45,8 @@ class Intraday: public Base
 
         long ref_time;
 
-        int ask_level = 0;
-        int bid_level = 0;
+        double ask_level = 0;
+        double bid_level = 0;
 
         void DoAction(int action);
         bool NextState();
@@ -52,12 +54,8 @@ class Intraday: public Base
             const std::map<double, long, FloatComparator<>>& transactions = {});
 
         std::function<std::tuple<double, double>(int, int)> l2p_;
-        void _place_orders(int sp, int sk, int level=1,bool replace=true);
-
-        void LogProfit(int action, double pnl, double bandh);
-        void LogTrade(char side, int type, double price,
-                      long size, double pnl);
-
+        void _place_orders(double sp, double sk, int levelplace,bool replace=true);
+        void _place_orders(double,double,bool replace=true);
     public:
         Intraday(Config& c);
         Intraday(Config& c, string symbol, string md_path, string tas_path);
@@ -73,6 +71,17 @@ class Intraday: public Base
         string getEpisodeId();
 
         void printInfo(const int action = -1);
+
+        void LogProfit(int action, double pnl, double bandh);
+        void LogMarket();
+        //用于记录t0时刻的行情
+        void LogTrade(int index, char side, int price, int vol);
+        //用于记录t0时刻的open_order在t1时刻的撮合成交情况
+        void LogAction(int action, int ask, double ref, int bid, int pos);
+        //用于记录t0时刻做出的报单选择
+        void LogOpenOrder();
+        void LogPnl(double, double, double, double, double);
+        //用于记录当前区间内的各种pnl
 };
 
 }

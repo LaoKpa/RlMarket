@@ -29,7 +29,10 @@ bool Runner::RunEpisode(rl::Agent *m)
     while (not is_terminal);
 
     environment.ClearInventory();
-
+    //记录清库存后的pnl日志
+    if(environment.trade_logger){
+        environment.trade_logger->info("END,Pnl,{}",environment.getEpisodePnL());
+    }
     return true;
 }
 
@@ -94,14 +97,14 @@ bool Learner::RunEpisode(rl::Agent *m)
 }
 
 
-Backtester::Backtester(Config &c, environment::Base& env):
+Backtester::Backtester(Config &c, environment::Base& env,string date):
     Runner(c, env)
 {
     // Register loggers for environment:
     if (c["logging"] and c["logging"]["log_backtest"].as<bool>()) {
         try {
             spdlog::rotating_logger_mt("profit_log",
-                                       c["output_dir"].as<string>() + "profit_log.csv",
+                                       c["output_dir"].as<string>() + "profit_log/"+"profit_log"+date,
                                        c["logging"]["max_size"].as<size_t>(), 1);
             spdlog::get("profit_log")
                 ->info("episode,step,action,position,midprice,spread,quoted_ask,quoted_bid,ask_level,bid_level,pnl_step,bandh_step");
@@ -110,15 +113,28 @@ Backtester::Backtester(Config &c, environment::Base& env):
 
         try {
             spdlog::rotating_logger_mt("trade_log",
-                                       c["output_dir"].as<string>() + "order_log.csv",
+                                       c["output_dir"].as<string>() +"order_log/"+ "order_log"+date,
                                        c["logging"]["max_size"].as<size_t>(), 1);
             spdlog::get("trade_log")->
-                info("episode,step1,step2,position,side,action,price,size,pnl");
+                    info("Episode,Step,Clock,Ap1,Av1,Bp1,Bv1");
+            spdlog::get("trade_log")->
+                    info(" , 报单,Action,AskQuote,RefPrice,BidQuote,Pos");
+            spdlog::get("trade_log")->
+                    info(" ,撤单 ,Index,Side,Price,Vol");
+            spdlog::get("trade_log")->
+                    info(" ,现存挂单 ,Index,Side,Price,Vol");
+            spdlog::get("trade_log")->
+                    info(" ,成交 ,Index,Side,Price,Vol");
 
         } catch(const std::exception& e) {}
 
         env.start_logging();
     }
+}
+
+Backtester::~Backtester() {
+    spdlog::drop(string("trade_log"));
+    spdlog::drop(string("profit_log"));
 }
 
 bool Backtester::_step(rl::Agent *m)

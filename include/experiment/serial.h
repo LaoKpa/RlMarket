@@ -54,7 +54,8 @@ class Backtester: public Runner
         bool _step(rl::Agent *m);
 
     public:
-        Backtester(Config& c, environment::Base& env);
+        Backtester(Config& c, environment::Base& env ,string date);
+        ~Backtester();
 };
 
 }

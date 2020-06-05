@@ -9,15 +9,15 @@
 using namespace std;
 using namespace market;
 
-Order::Order(double price, long size, long q_head):
-    q_head(q_head),
-    q_tail(0),
+Order::Order(double price, long size, long q_head,char side_):
+        q_head(q_head),
+        q_tail(0),
+        side(side_),
+        id(Order::id_counter_),
 
-    id(Order::id_counter_),
-
-    price(price),
-    size(size),
-    initial_queue(q_head)
+        price(price),
+        size(size),
+        initial_queue(q_head)
 {
     if (price <= 0)
         throw runtime_error("Order price must be non-zero and positive.");

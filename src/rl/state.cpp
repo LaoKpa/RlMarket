@@ -52,6 +52,9 @@ void State::newState(vector<float>& _vars, double _potential)
 
 void State::populateFeatures()
 {
+    /*
+     *  分成三部分
+     */
     for (int a = 0; a < N_ACTIONS; a++) {
         ::tiles(&features[a][0], N_TILINGS, MEMORY_SIZE,
                 &state_vars[0], 3, a);

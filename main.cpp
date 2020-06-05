@@ -7,19 +7,15 @@
 #include <thread>
 #include <fstream>
 #include <iostream>
-#include <unistd.h>
-#include <dirent.h>
+
 #include <iterator>
 #include <algorithm>
-#include <yaml-cpp/yaml.h>
 #include <spdlog/spdlog.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "rl/agent.h"
 #include "rl/tiles.h"
-#include "data/basic.h"
-#include "experiment/batch.h"
 #include "experiment/serial.h"
 #include "utilities/files.h"
 #include "utilities/sampler.h"
@@ -64,6 +60,7 @@ void train(int id, Config &c, rl::Agent* m)
             cout << "\n\tRwd = " << env.getEpisodeReward() << endl;
             cout << "\tRho = " << env.getMeanEpisodeReward() << endl;
             cout << "\tPnl = " << env.getEpisodePnL() << endl;
+            //Pnl：episode_stats.pnl;
             cout << "\tnTr = " << env.getTotalTransactions() << endl;
             cout << "\tPpt = " << env.getEpisodePnL()/env.getTotalTransactions() << endl;
             cout << endl;
@@ -93,42 +90,14 @@ void run(Config &c) {
 
     // Partition the data
     auto symbols = c["data"]["symbols"].as<vector<string>>();
-    auto file_samples = get_file_sample(c["data"]["md_dir"].as<string>(),
-                                        c["data"]["tas_dir"].as<string>(),
-                                        symbols);
+    auto train_file_samples = get_file_sample(c["data"]["train"]["md_dir"].as<string>(),
+                                        c["data"]["train"]["tas_dir"].as<string>(),
+                                            symbols);
+    auto test_file_samples = get_file_sample(c["data"]["test"]["md_dir"].as<string>(),
+                                              c["data"]["test"]["tas_dir"].as<string>(),
+                                              symbols);
 
     int n_train_samples = c["training"]["n_samples"].as<int>(-1);
-
-    if (eval_from_train) {
-        std::shuffle(file_samples.begin(), file_samples.end(),
-                     std::default_random_engine(seed));
-
-        train_set.resize(file_samples.size());
-        copy(file_samples.begin(), file_samples.end(), train_set.begin());
-
-    } else {
-        if (n_eval_episodes == -1) n_eval_episodes = file_samples.size();
-
-        int pivot = file_samples.size() - n_eval_episodes;
-
-        train_set.resize(pivot);
-        test_set.resize(n_eval_episodes);
-
-        copy(file_samples.begin(), file_samples.begin() + pivot, train_set.begin());
-        copy(file_samples.begin() + pivot, file_samples.end(), test_set.begin());
-    }
-
-    if (n_train_samples < 0) n_train_samples = train_set.size();
-    else if ((size_t) n_train_samples > train_set.size())
-        throw std::runtime_error("Insufficient training samples.");
-
-    train_set.erase(train_set.begin(),
-                    train_set.begin()+(train_set.size() - n_train_samples));
-
-    if (eval_from_train) {
-        test_set.resize(train_set.size());
-        copy(train_set.begin(), train_set.end(), test_set.begin());
-    }
 
     cout << "[-] Training on " << n_train_episodes << " episodes." << endl;
     cout << "[-] Testing on " << n_eval_episodes << " episodes." << endl;
@@ -190,23 +159,9 @@ void run(Config &c) {
 
     // Run training phases:
     if (n_train_episodes > 0) {
-        n_threads = min(c["training"]["n_threads"].as<int>(1),
-                        n_train_episodes);
-
-        if (n_threads > 1) {
-            // Setup threads:
-            vector<thread*> threads;
-            for (int i = 0; i < n_threads; i++)
-                threads.push_back(new thread(train, i, ref(c), m));
-
-            // Wait for threads to end
-            for (int i = 0; i < n_threads; i++) {
-                threads[i]->join();
-                delete threads[i];
-            }
-        } else {
-            train(0, c, m);
-        }
+        train_set.resize(train_file_samples.size());
+        copy(train_file_samples.begin(), train_file_samples.end(), train_set.begin());
+        train(0, c, m);
     }
 
     // Reset counter:
@@ -216,13 +171,19 @@ void run(Config &c) {
     // Run final testing phase:
     m->GoGreedy();
 
+    test_set.resize(test_file_samples.size());
+    copy(test_file_samples.begin(), test_file_samples.end(), test_set.begin());
+    data_sample_t ds;
+    RandomSampler<data_sample_t> rs(test_set);
+
     environment::Intraday<> env(c);
     for (int i = 0; i < n_eval_episodes; i++) {
-        data_sample_t ds = test_set[i];
+        ds = rs.sample();
         env.LoadData(get<0>(ds), get<1>(ds), get<2>(ds));
-
-        experiment::serial::Backtester experiment(c, env);
-
+        string date_file = get<2>(ds);
+        int npos = date_file.find_last_of("_");
+        date_file = string(to_string(i)+"_")+(date_file.substr(npos,20));
+        experiment::serial::Backtester experiment(c, env, date_file);
         current_episode++;
 
         if (experiment.RunEpisode(m)) {
@@ -324,6 +285,7 @@ int main(int argc, char** argv)
             output_dir.append("/");
 
         boost::filesystem::create_directories(output_dir);
+        boost::filesystem::create_directories(output_dir+string("profit_log/"));
 
         // Copy original yaml file for reference:
         if (config_path.find('/') == string::npos)

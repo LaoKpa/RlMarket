@@ -83,6 +83,13 @@ class Base
 
         EWMA<double> return_ups, return_downs;
 
+        //自定义指标
+        DataBuffer dbf;
+
+        //pnl
+        double pospnl = 0.0;
+        double tradepnl = 0.0;
+
         // Inspection
         const bool INSPECT_BOOKS;
 
@@ -92,10 +99,6 @@ class Base
         ExperimentStatistics experiment_stats;
         TradeStatistics trade_stats;
         TickStatistics tick_stats;
-
-        // Logging
-        shared_ptr<spdlog::logger> profit_logger = nullptr;
-        shared_ptr<spdlog::logger> trade_logger = nullptr;
 
     protected:
         // Interaction functions:
@@ -109,11 +112,6 @@ class Base
         void ClearStats();
 
         void ClearWindows();
-
-        virtual void LogProfit(int action, double pnl, double bandh) = 0;
-        virtual void LogTrade(char side, int type, double price,
-                              long size, double pnl) = 0;
-
     public:
         Base(Config &c);
         ~Base();
@@ -148,6 +146,24 @@ class Base
 
         void resetStats();
         void writeStats(string path);
+
+
+        virtual void LogProfit(int action, double pnl, double bandh) = 0;
+        //用于记录每一步完成后的pnl
+        virtual void LogMarket() = 0;
+        //用于记录t0时刻的行情
+        virtual void LogTrade(int index, char side, int price, int vol) = 0;
+        //用于记录t0时刻的open_order在t1时刻的撮合成交情况
+        virtual void LogAction(int action, int ask, double ref, int bid, int pos) = 0;
+        //用于记录t0时刻做出的报单选择
+        virtual void LogOpenOrder() = 0;
+        //用于记录t0时刻完成报单动作后现存的所有open_orders
+        virtual void LogPnl(double,double,double,double,double) = 0;
+        //用于记录当前区间内的各种pnl
+
+        // Logging
+        shared_ptr<spdlog::logger> profit_logger = nullptr;
+        shared_ptr<spdlog::logger> trade_logger = nullptr;
 };
 
 }

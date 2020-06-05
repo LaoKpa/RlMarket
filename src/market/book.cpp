@@ -13,23 +13,24 @@
 using namespace market;
 using namespace market::measure;
 
+
 template<typename C, size_t DEPTH>
 Book<C, DEPTH>::Book():
-    price_comparator_(),
+        price_comparator_(),
 
-    open_orders(price_comparator_),
+        open_orders(price_comparator_),
 
-    prices(),
-    last_prices(),
+        prices(),
+        last_prices(),
 
-    levels(price_comparator_),
-    last_levels(price_comparator_),
+        levels(price_comparator_),
+        last_levels(price_comparator_),
 
-    total_volume_(0L),
-    last_total_volume_(0L),
+        total_volume_(0L),
+        last_total_volume_(0L),
 
-    observed_transaction_value_(0.0),
-    observed_transaction_volume_(0L)
+        observed_transaction_value_(0.0),
+        observed_transaction_volume_(0L)
 {
     Reset();
 }
@@ -61,9 +62,9 @@ bool Book<C, DEPTH>::HasStash()
 
 template<typename C, size_t DEPTH>
 void Book<C, DEPTH>::ApplyChanges(
-    const std::array<double, DEPTH>& new_prices,
-    const std::array<long, DEPTH>& new_volumes,
-    const std::map<double, long, FloatComparator<>>& transactions)
+        const std::array<double, DEPTH>& new_prices,
+        const std::array<long, DEPTH>& new_volumes,
+        const std::map<double, long, FloatComparator<>>& transactions)
 {
     levels.clear();
 
@@ -71,9 +72,9 @@ void Book<C, DEPTH>::ApplyChanges(
 
     for (unsigned int l = 0; l < DEPTH; l++) {
         if (new_prices[l] <= 0.0)
-            throw runtime_error("Prices must be non-zero positive: " + to_string(new_prices[l]));
+            throw runtime_error("Prices must be non-zero positive: " + std::to_string(new_prices[l]));
         else if (new_volumes[l] <= 0)
-            throw runtime_error("Volumes must be non-zero positive: " + to_string(new_prices[l]));
+            throw runtime_error("Volumes must be non-zero positive: " + std::to_string(new_prices[l]));
         else {
             prices[l] = new_prices[l];
             levels[new_prices[l]] = new_volumes[l];
@@ -84,17 +85,19 @@ void Book<C, DEPTH>::ApplyChanges(
     std::sort(prices.begin(), prices.end(), price_comparator_);
 
     // Iterate over all agent orders and update their queues
+
     auto it = open_orders.begin();
     auto it_t_end = transactions.end();
     while (true) {
         if (it == open_orders.end())
             break;
 
-        auto it_t = transactions.find(it->first);       //在成交记录中找是否open_orders的价格是否存在
-        long tv = (it_t == it_t_end) ? 0L : it_t->second;       //如果没找到tv=0否则tv=成交量
+        auto it_t = transactions.find(it->first);
+        long tv = (it_t == it_t_end) ? 0L : it_t->second;
 
-        it = UpdateOrder(it, tv);       //it是agent挂的单，tv是agent挂单价格在成交记录里对应的量
+        it = UpdateOrder(it, tv);
     }
+
 }
 
 template<typename C, size_t DEPTH>
@@ -106,7 +109,9 @@ typename Book<C, DEPTH>::OMI Book<C, DEPTH>::UpdateOrder(Book<C, DEPTH>::OMI it,
 
     if (o->isExecuted())
         return open_orders.erase(it);
-
+    it++;
+    return it;
+    /*
     long lv = last_volume(price);
     if (lv == 0) {
         // Was previously at undefined level, so the last volume should be
@@ -128,8 +133,7 @@ typename Book<C, DEPTH>::OMI Book<C, DEPTH>::UpdateOrder(Book<C, DEPTH>::OMI it,
     long vol_diff = lv - v;
     if (vol_diff >= 0) {
         long cancelled_volume = vol_diff - transaction_volume;
-        //lv=2000,v=1000,trans=500,cancel=500(无新的order)
-        //若新报了100，则v=1100,cancel=400
+
         if (cancelled_volume > 0)
             o->doCancellation(cancelled_volume);
 
@@ -138,6 +142,7 @@ typename Book<C, DEPTH>::OMI Book<C, DEPTH>::UpdateOrder(Book<C, DEPTH>::OMI it,
 
     ++it;
     return it;
+    */
 }
 
 template<typename C, size_t DEPTH>
@@ -170,7 +175,7 @@ double Book<C, DEPTH>::price(int level)
 
     if ((unsigned int) level >= DEPTH or level < 0 or prices[level] == 0.0)
         throw runtime_error("Attempted to access an undefined price at level: " +
-                            to_string(level));
+                            std::to_string(level));
     else
         return prices[level];
 }
@@ -182,7 +187,7 @@ double Book<C, DEPTH>::last_price(int level)
 
     if ((unsigned int) level >= DEPTH or level < 0 or last_prices[level] == 0.0)
         throw runtime_error("Attempted to access undefined last price at level: " +
-                            to_string(level));
+                            std::to_string(level));
     else
         return last_prices[level];
 }
@@ -245,25 +250,48 @@ template<typename C, size_t DEPTH>
 long Book<C, DEPTH>::observed_volume()
 { return observed_transaction_volume_; }
 
+template<typename C, size_t DEPTH>
+void Book<C, DEPTH>::LogTrade(int index, char side, int price, int vol) {
+    //调用Intraday的logtrade
+    if (trade_logger != nullptr) {
+        trade_logger->info("{},{},{},{},{},{}",
+                           "", " 成交", index, side, price, vol);
+    }
+}
+
+template<typename C, size_t DEPTH>
+void Book<C, DEPTH>::LogCancel(int index, char side, int price, int vol) {
+    //记录order撤单时的remaining情况
+    if (trade_logger != nullptr) {
+        trade_logger->info("{},{},{},{},{},{}",
+                           "", " 撤单", index, side, price, vol);
+    }
+}
+
+template<typename C, size_t DEPTH>
+void Book<C, DEPTH>::SetLogger(std::shared_ptr<spdlog::logger> l) {
+    trade_logger = l;
+}
+
 // Order methods ----------------------------------------------------
 template<typename C, size_t DEPTH>
-bool Book<C, DEPTH>::PlaceOrder(double price, long size)
+bool Book<C, DEPTH>::PlaceOrder(double price, long size,char side)
 {
     auto it = GetOrder(price);
 
     if (OrderExists(it))
         return false;
     else {
-        open_orders.emplace(price, make_unique<Order>(price, size, volume(price)));
- 
+        open_orders.emplace(price, make_unique<Order>(price, size, volume(price),side));
+
         return true;
     }
 }
 
 template<typename C, size_t DEPTH>
-bool Book<C, DEPTH>::PlaceOrderAtLevel(int level, long size)
+bool Book<C, DEPTH>::PlaceOrderAtLevel(int level, long size,char side)
 {
-    return PlaceOrder(price(level), size);
+    return PlaceOrder(price(level), size, side);
 }
 
 template<typename C, size_t DEPTH>
@@ -289,6 +317,9 @@ void Book<C, DEPTH>::CancelBest()
 template<typename C, size_t DEPTH>
 void Book<C, DEPTH>::CancelWorst()
 {
+    auto iter = --open_orders.rbegin().base();
+    //记录撤单情况
+    LogCancel(iter->second->id, iter->second->side, iter->first, iter->second->remaining());
     open_orders.erase(--open_orders.rbegin().base());
 }
 
@@ -381,10 +412,10 @@ template class market::Book<ReverseFloatComparator<>, 5>;
 // Ask book
 template<size_t DEPTH>
 std::tuple<long, double, double>
-    AskBook<DEPTH>::ApplyTransactions(
+AskBook<DEPTH>::ApplyTransactions(
         const std::map<double, long, FloatComparator<>>& transactions,
         const double reference_price
-    )
+)
 {
     auto o_it = this->open_orders.begin();
 
@@ -397,7 +428,7 @@ std::tuple<long, double, double>
 
     for (auto it = transactions.begin(); it != transactions.end(); ++it) {
         if (it->first < reference_price) continue;
-        //此时成交的价格>mid_price，即ref_price
+
         long vol = it->second;
 
         this->observed_transaction_value_ += it->first * vol;
@@ -408,6 +439,9 @@ std::tuple<long, double, double>
 
             vol = o_it->second->doTransaction(vol);
             long order_exec = _order_rem - o_it->second->remaining();
+
+            if(order_exec)
+                this->LogTrade(o_it->second->id, 'A', o_it->first, (int)order_exec);
 
             volume -= order_exec;
             proxy += (o_it->first - reference_price) * order_exec;
@@ -428,7 +462,7 @@ std::tuple<long, double, double>
 
 template<size_t DEPTH>
 std::tuple<long, double, double>
-    AskBook<DEPTH>::WalkTheBook(double reference_price, long size)
+AskBook<DEPTH>::WalkTheBook(double reference_price, long size)
 {
     long abs_size = abs(size);
 
@@ -440,7 +474,7 @@ std::tuple<long, double, double>
     double value = 0.0;
     for (auto const& kv : this->levels) {
         long lvol = kv.second,
-             l_ex = min(lvol, (abs_size - executed));
+                l_ex = fmin(lvol, (abs_size - executed));
 
         executed += l_ex;
         proxy -= l_ex * fabs(kv.first - reference_price);
@@ -466,8 +500,8 @@ template struct market::AskBook<5>;
 // Bid book
 template<size_t DEPTH>
 std::tuple<long, double, double> BidBook<DEPTH>::ApplyTransactions(
-    const std::map<double, long, FloatComparator<>>& transactions,
-    const double reference_price)
+        const std::map<double, long, FloatComparator<>>& transactions,
+        const double reference_price)
 {
     auto o_it = this->open_orders.rbegin();
 
@@ -492,6 +526,9 @@ std::tuple<long, double, double> BidBook<DEPTH>::ApplyTransactions(
             vol = o_it->second->doTransaction(vol);
             long order_exec = _order_rem - o_it->second->remaining();
 
+            if (order_exec)
+                this->LogTrade(o_it->second->id, 'B', o_it->first, order_exec);
+
             volume += order_exec;
             proxy += (reference_price - o_it->first) * order_exec;
             value -= o_it->first * order_exec;
@@ -511,7 +548,7 @@ std::tuple<long, double, double> BidBook<DEPTH>::ApplyTransactions(
 
 template<size_t DEPTH>
 std::tuple<long, double, double>
-    BidBook<DEPTH>::WalkTheBook(double reference_price, long size)
+BidBook<DEPTH>::WalkTheBook(double reference_price, long size)
 {
     long abs_size = abs(size);
 
@@ -523,7 +560,7 @@ std::tuple<long, double, double>
     double value = 0.0;
     for (auto const& kv : this->levels) {
         long lvol = kv.second,
-             l_ex = min(lvol, (abs_size - executed));
+                l_ex = fmin(lvol, (abs_size - executed));
 
         executed += l_ex;
         proxy -= l_ex * fabs(kv.first - reference_price);
@@ -549,12 +586,12 @@ template struct market::BidBook<5>;
 // Book Utils
 template<size_t DEPTH>
 std::tuple<long, double, double> BookUtils::HandleAdverseSelection(
-    AskBook<DEPTH>& ask_book, BidBook<DEPTH>& bid_book)
+        AskBook<DEPTH>& ask_book, BidBook<DEPTH>& bid_book)
 {
     // TODO: Improve this logic to handle orders > adverse level.
     const double bap = ask_book.price(0),
-                 bbp = bid_book.price(0),
-                 rp  = last_midprice(ask_book, bid_book);
+            bbp = bid_book.price(0),
+            rp  = last_midprice(ask_book, bid_book);
 
     long volume = 0L;
     double proxy = 0.0;
@@ -593,7 +630,7 @@ std::tuple<long, double, double> BookUtils::HandleAdverseSelection(
 
 template<size_t DEPTH>
 std::tuple<long, double, double>
-    BookUtils::MarketOrder(
+BookUtils::MarketOrder(
         long size, AskBook<DEPTH>& ask_book, BidBook<DEPTH>& bid_book)
 {
     double mip = midprice(ask_book, bid_book);
@@ -617,16 +654,16 @@ bool BookUtils::IsValidState(AskBook<DEPTH>& ask_book,
 
     if (ask_book.HasStash() and bid_book.HasStash())
         return
-            (spread(ask_book, bid_book) >= 0.0)
-            and (mp > 0.0)
-            and (fabs(midprice_move(ask_book, bid_book)) < mp);
+                (spread(ask_book, bid_book) >= 0.0)
+                and (mp > 0.0)
+                and (fabs(midprice_move(ask_book, bid_book)) < mp);
     else
         return true;
 }
 
 // Template specialisations
 template std::tuple<long, double, double>
-    BookUtils::HandleAdverseSelection<5>(AskBook<5>&, BidBook<5>&);
+BookUtils::HandleAdverseSelection<5>(AskBook<5>&, BidBook<5>&);
 template std::tuple<long, double, double>
-    BookUtils::MarketOrder<5>(long, AskBook<5>&, BidBook<5>&);
+BookUtils::MarketOrder<5>(long, AskBook<5>&, BidBook<5>&);
 template bool BookUtils::IsValidState<5>(AskBook<5>&, BidBook<5>&);

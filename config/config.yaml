@@ -4,12 +4,11 @@ debug:
 
 training:
     n_threads: 1
-    n_samples: 1
-    n_episodes: 10
+    n_samples: 3
+    n_episodes: 10000
 
 evaluation:
     n_samples: 1
-    use_train_sample: true
 
     random_agent: false
 
@@ -36,7 +35,7 @@ policy:
 
     eps_init: 0.8
     eps_floor: 0.0001
-    eps_T: 800
+    eps_T: 5000
 
     spread_lookback: 45
 
@@ -51,7 +50,9 @@ reward:
     pnl_weight: 1.0
 
 state:
-    variables: ["pos", "a_dist", "b_dist", "mpm", "spd", "vol", "imb", "svl"]
+    #variables: ["pos", "a_dist", "b_dist", "mpm", "spd", "vol", "imb", "svl"]
+    variables: ["pos", "a_dist", "b_dist", "mpm", "spd", "abv_diff","abv_diff_ratio",
+                "abv_diff_change","av_consume","av_consume_5d","bv_consume","bv_consume_5d"]
     lookback:
         mpm: 15
         vlt: 60
@@ -61,13 +62,16 @@ state:
 
 data:
     symbols: ["000661.SZ"]
-
-    md_dir: "../data/md"
-    tas_dir: "../data/tas"
+    train:
+        md_dir: "../data/train/md"
+        tas_dir: "../data/train/tas"
+    test:
+        md_dir: "../data/test/md"
+        tas_dir: "../data/test/tas"
     #md_dir: "../../../temp/md"
     #tas_dir: "../../../temp/tas"
 market:
-    transaction_fee: 0.0
+    TRANSACTION_FEE: 0.0007
 
     target_price:
         type: midprice          #源代码有笔误

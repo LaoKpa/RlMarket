@@ -191,7 +191,7 @@ NasdaqNordic::NasdaqNordic(std::string symbol, Currency c, long mo, long mc):
 
 // Concrete:
 ShenZhenMarket::ShenZhenMarket(std::string symbol):
-        ChineseMarket(symbol,CNY,add_hours(9, add_minutes(30,0)), add_hours(14, add_minutes(50,0)))
+        ChineseMarket(symbol,CNY,add_hours(9, add_minutes(30,0)), add_hours(14, add_minutes(40,0)))
 {}
 
 AmsterdamStockExchange::AmsterdamStockExchange(std::string symbol):

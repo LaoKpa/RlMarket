@@ -9,6 +9,7 @@
 
 #include "market/order.h"
 #include "utilities/comparison.h"
+#include <spdlog/spdlog.h>
 
 using namespace std;
 
@@ -31,8 +32,6 @@ class Book
         C price_comparator_;
 
     protected:
-        OrderMap open_orders;
-
         array<double, DEPTH> prices;
         array<double, DEPTH> last_prices;
 
@@ -47,6 +46,7 @@ class Book
         double observed_transaction_value_;
         long observed_transaction_volume_;
 
+        std::shared_ptr<spdlog::logger> trade_logger;
     protected:
         Book();
 
@@ -55,6 +55,12 @@ class Book
         OMI UpdateOrder(OMI it, long transaction_volume);
 
     public:
+        OrderMap open_orders;
+
+        void SetLogger(std::shared_ptr<spdlog::logger>);
+        void LogTrade(int index, char side, int price, int vol);
+        void LogCancel(int index, char side, int price, int vol);
+
         void StashState();
         bool HasStash();
 
@@ -85,8 +91,8 @@ class Book
         long observed_volume();
 
         // Order methods
-        bool PlaceOrder(double price, long size);
-        bool PlaceOrderAtLevel(int level, long size);
+        bool PlaceOrder(double price, long size,char side);
+        bool PlaceOrderAtLevel(int level, long size,char side);
 
         bool HasOpenOrder(double price);
         void CancelOrder(double price);

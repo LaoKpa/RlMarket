@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="RLMARKET"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="RLMARKET">
+				<Option output="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/RLMARKET" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/./include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 RLMARKET"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="RLMARKET/fast">
+				<Option output="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/RLMARKET" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/./include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 RLMARKET/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/main.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/data/basic.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/data/records.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/data/streamer.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/environment/base.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/environment/intraday.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/environment/risk_manager.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/environment/statistics.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/experiment/batch.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/experiment/serial.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/market/book.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/market/latency.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/market/market.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/market/order.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/market/target_price.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/rl/agent.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/rl/policy.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/rl/state.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/rl/tiles.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/rl/traces.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/utilities/accumulators.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/src/utilities/csv.cpp">
+			<Option target="RLMARKET"/>
+		</Unit>
+		<Unit filename="/Users/limingfang/Documents/GitHub/GithubDesktop/RlMarket/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
